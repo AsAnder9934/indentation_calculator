@@ -1,8 +1,7 @@
-from tkinter import *
 from functions import *
 
 root = Tk()
-root.geometry('600x400')
+root.geometry('400x200')
 root.title('Kalkulator wcięć')
 
 frame_options = Frame(root)
