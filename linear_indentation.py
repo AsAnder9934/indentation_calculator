@@ -1,9 +1,64 @@
 from tkinter import *
 import math
+from tkinter import messagebox, Label
+import pyproj
+import tkintermapview
+from PIL import Image, ImageTk
+
+def odleglosc_ab(entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
+    x1 = float(entry_A_X.get())
+    y1 = float(entry_A_Y.get())
+    x2 = float(entry_B_X.get())
+    y2 = float(entry_B_Y.get())
+
+    odleglosc = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    return odleglosc
+
+def azymut_A_ab(entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
+    x1 = float(entry_A_X.get())
+    y1 = float(entry_A_Y.get())
+    x2 = float(entry_B_X.get())
+    y2 = float(entry_B_Y.get())
+
+    dx = x2 - x1
+    dy = y2 - y1
+    radian_azimuth = math.atan2(dy, dx)
+    return radian_azimuth
+
+def kat_alfa(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
+    odleglosc_ab_value = odleglosc_ab(entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
+    entry_distance_ac_value = float(entry_distance_ac.get())
+    entry_distance_bc_value = float(entry_distance_bc.get())
+
+    kat = math.acos((entry_distance_bc_value ** 2 - (entry_distance_ac_value ** 2 + odleglosc_ab_value ** 2)) /
+                    ((-2) * entry_distance_ac_value * odleglosc_ab_value))
+    return kat
+
+def azymut_A_ap(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
+    azymut_A_ab_value = azymut_A_ab(entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
+    kat_alfa_value = kat_alfa(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
+
+    azymut = azymut_A_ab_value - kat_alfa_value
+    return azymut
+
+def przyrosty_x(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
+    entry_distance_ac_value = float(entry_distance_ac.get())
+
+    azymut_A_ap_value = azymut_A_ap(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
+
+    przyrost = entry_distance_ac_value * math.cos(azymut_A_ap_value)
+    return przyrost
+def przyrosty_y(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
+    entry_distance_ac_value = float(entry_distance_ac.get())
+
+    azymut_A_ap_value = azymut_A_ap(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
+
+    przyrost = entry_distance_ac_value * math.sin(azymut_A_ap_value)
+    return przyrost
 
 def okno_wciecia_liniowego():
     root = Toplevel()
-    root.geometry('600x400')
+    root.geometry('550x400')
     root.title('Okno Wcięcia Liniowego')
 
     frame_linear=Frame(root)
@@ -45,82 +100,81 @@ def okno_wciecia_liniowego():
     entry_distance_ac.grid(row=4, column=1)
     entry_distance_bc.grid(row=5, column=1)
 
-    button_oblicz = Button(frame_linear, text='OBLICZ WSPÓŁRZĘDNE PUNKTU C', command=wspolrzedne_punktu_c)
-    button_oblicz.grid(row=7, column=0, columnspan=3)
+    button_oblicz = Button(frame_linear, text='OBLICZ WSPÓŁRZĘDNE PUNKTU C', command=lambda: wspolrzedne_punktu_c(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y))
+    button_oblicz.grid(row=7, column=0, columnspan=2)
 
-    button_mapa = Button(frame_linear, text='POKAŻ MAPĘ')
+    button_mapa = Button(frame_linear, text='POKAŻ MAPĘ', command=lambda: widget(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y))
     button_mapa.grid(row=8, column=0, columnspan=3)
 
-def odleglosc_ab(entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
-    x1 = float(entry_A_X.get())
-    y1 = float(entry_A_Y.get())
-    x2 = float(entry_B_X.get())
-    y2 = float(entry_B_Y.get())
+    result_text = Text(frame_linear, height=4, width=25)
+    result_text.grid(row=9, column=0, columnspan=2, pady=10, padx=10, sticky='nsew')
+    def wspolrzedne_punktu_c(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
+        if entry_distance_ac.get() and entry_distance_bc.get() and entry_A_X.get() and entry_A_Y.get() and entry_B_X.get() and entry_B_Y.get():
+            entry_A_X_value = float(entry_A_X.get())
+            entry_A_Y_value = float(entry_A_Y.get())
 
-    odleglosc = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-    return odleglosc
-def azymut_A_ab(entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
-    x1 = float(entry_A_X.get())
-    y1 = float(entry_A_Y.get())
-    x2 = float(entry_B_X.get())
-    y2 = float(entry_B_Y.get())
+            x = entry_A_X_value + przyrosty_x(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
+            y = entry_A_Y_value + przyrosty_y(entry_distance_ac,entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
+            result_text.delete(1.0, END)
+            result_text.insert(END, "Współrzędne punktu C:\n")
+            result_text.insert(END, f"X: {x:.3f}\n")
+            result_text.insert(END, f"Y: {y:.3f}\n")
+            return x, y
+        else:
+            messagebox.showerror("Błąd", "Proszę wypełnić wszystkie pola.")
 
-    dx = x2 - x1
-    dy = y2 - y1
-    radian_azimuth = math.atan2(dy, dx)
-    azimuth = math.degrees(radian_azimuth) * (10 / 9)
-    azimuth = (azimuth + 400) % 400
-    return azimuth
+    #wigdet z podgladem na cala Polske
+    # map = tkintermapview.TkinterMapView(frame_linear, width=300, height=300)
+    # map.set_position(52.0689883, 19.4799726)
+    # map.set_zoom(5)
+    # map.grid(row=4, column=2, columnspan=8, rowspan=8, padx=10)
 
-def kat_gamma(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
-    odleglosc_ab_value = odleglosc_ab(entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
-    entry_distance_ac_value = float(entry_distance_ac.get())
-    entry_distance_bc_value = float(entry_distance_bc.get())
+    # obrazek w formie instrukcji postepowania podczas wprowadznia danych
+    image = Image.open("wciecie_liniowe.png")
 
-    kat = math.atan((odleglosc_ab_value ** 2 - (entry_distance_ac_value ** 2 + entry_distance_bc_value ** 2)) / (
-                -2 * entry_distance_ac_value * entry_distance_bc_value))
-    return kat
-def kat_beta(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
-    odleglosc_ab_value = odleglosc_ab(entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
-    entry_distance_ac_value = float(entry_distance_ac.get())
-    entry_distance_bc_value = float(entry_distance_bc.get())
+    szerokosc, wysokosc = image.size
+    skalowanie = 0.48
+    nowa_szerokosc = int(szerokosc * skalowanie)
+    nowa_wysokosc = int(wysokosc * skalowanie)
+    image = image.resize((nowa_szerokosc, nowa_wysokosc))
 
-    kat = math.atan((entry_distance_ac_value ** 2 - (odleglosc_ab_value ** 2 + entry_distance_bc_value ** 2)) / (
-                -2 * odleglosc_ab_value * entry_distance_bc_value))
-    return kat
+    photo = ImageTk.PhotoImage(image)
 
-def kat_alfa(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
-    odleglosc_ab_value = odleglosc_ab(entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
-    entry_distance_ac_value = float(entry_distance_ac.get())
-    entry_distance_bc_value = float(entry_distance_bc.get())
+    label = Label(root, image=photo)
+    label.image = photo
+    label.grid(row=0, column=0, columnspan=10, rowspan=10, padx=250, pady=100)
 
-    kat = math.atan((entry_distance_bc_value ** 2 - (entry_distance_ac_value ** 2 + odleglosc_ab_value ** 2)) / (
-                -2 * entry_distance_ac_value * odleglosc_ab_value))
-    return kat
-def azymut_A_ap(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
-    azymut_A_ab_value = azymut_A_ab(entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
-    kat_alfa_value = kat_alfa(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
+    def uklad_1992_to_wspolrzedne_geograficzne(x, y):
+        transformer = pyproj.Transformer.from_crs("EPSG:2180", "EPSG:4326", always_xy=True)
+        lon, lat = transformer.transform(x, y)
+        return lat, lon
 
-    azymut = azymut_A_ab_value - kat_alfa_value
-    return azymut
+    def widget(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
+        x_a = float(entry_A_X.get())
+        y_a = float(entry_A_Y.get())
+        x_b = float(entry_B_X.get())
+        y_b = float(entry_B_Y.get())
+        x_c, y_c = wspolrzedne_punktu_c(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
 
-def przyrosty_x(entry_distance_ac, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
-    entry_distance_ac_value = float(entry_distance_ac.get())
-    azymut_A_ap_value = azymut_A_ap(entry_distance_ac, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
+        lat_a, lon_a = uklad_1992_to_wspolrzedne_geograficzne(x_a, y_a)
+        lat_b, lon_b = uklad_1992_to_wspolrzedne_geograficzne(x_b, y_b)
+        lat_c, lon_c = uklad_1992_to_wspolrzedne_geograficzne(x_c, y_c)
 
-    przyrost = entry_distance_ac_value * math.cos(math.radians(azymut_A_ap_value))
-    return przyrost
-def przyrosty_y(entry_distance_ac, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
-    entry_distance_ac_value = float(entry_distance_ac.get())
-    azymut_A_ap_value = azymut_A_ap(entry_distance_ac, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
+        label.grid_forget()
 
-    przyrost = entry_distance_ac_value * math.sin(math.radians(azymut_A_ap_value))
-    return przyrost
-def wspolrzedne_punktu_c(entry_distance_ac, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
-    entry_A_X_value = float(entry_A_X.get())
-    entry_A_Y_value = float(entry_A_Y.get())
+        map = tkintermapview.TkinterMapView(frame_linear, width=300, height=300)
+        map.set_position(lat_a, lon_a)
+        map.set_zoom(15)
+        map.grid(row=4, column=2, columnspan=10, rowspan=10, padx=10)
 
-    x = entry_A_X_value + przyrosty_x(entry_distance_ac, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
-    y = entry_A_Y_value + przyrosty_y(entry_distance_ac, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y)
-    return x, y
+        a=map.set_marker(lat_a, lon_a)
+        a.set_text('Punkt A')
+        b=map.set_marker(lat_b, lon_b)
+        b.set_text('Punkt B')
+        c=map.set_marker(lat_c, lon_c)
+        c.set_text('Punkt wcinany C')
+
+        map.set_polygon([(lat_a, lon_a), (lat_b, lon_b), (lat_c, lon_c)], fill_color='blue',
+                        outline_color='red', border_width=8, command=lambda: widget(entry_distance_ac,
+                        entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y))
 
