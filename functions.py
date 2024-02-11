@@ -35,7 +35,7 @@ def wywolywacz(frame_options):
 
 def schowaj_przyciski(frame_options):
     for widget in frame_options.winfo_children():
-        if isinstance(widget, Button) and widget['text'] in ['WCIĘCIE LINIOWE', 'WCIĘCIA KĄTOWE', '3 opcja do okodowania']:
+        if isinstance(widget, Button) and widget['text'] in ['WCIĘCIE LINIOWE', 'WCIĘCIA KĄTOWE', '3 opcja (w przyszłosci)']:
             widget.grid_forget()
 
 def okno_do_okodowania():
