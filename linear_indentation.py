@@ -71,6 +71,7 @@ def okno_wciecia_liniowego():
     label_B_X = Label(frame_linear, text='WSPÓŁRZĘDNA X: ')
     label_B_Y = Label(frame_linear, text='WSPÓŁRZĘDNA Y: ')
     label_empty = Label(frame_linear, text='')
+    label_info = Label(frame_linear, text="Prawidłowe wyswietlanie położenia pkt. w układzie '92")
     label_odleglosc = Label(frame_linear, text='ODLEGŁOŚCI PO PUNKTU C')
     label_distance_ac = Label(frame_linear, text='ODLEGŁOŚĆ A-C')
     label_distance_bc = Label(frame_linear, text='ODLEGŁOŚĆ B-C')
@@ -92,6 +93,7 @@ def okno_wciecia_liniowego():
     label_distance_ac.grid(row=4, column=0)
     label_distance_bc.grid(row=5, column=0, pady=5)
     label_empty.grid(row=6, column=0)
+    label_info.grid(row=3, column=2, columnspan=2)
 
     entry_A_X.grid(row=1, column=1)
     entry_A_Y.grid(row=2, column=1)
@@ -108,6 +110,7 @@ def okno_wciecia_liniowego():
 
     result_text = Text(frame_linear, height=4, width=25)
     result_text.grid(row=9, column=0, columnspan=2, pady=10, padx=10, sticky='nsew')
+
     def wspolrzedne_punktu_c(entry_distance_ac, entry_distance_bc, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
         if entry_distance_ac.get() and entry_distance_bc.get() and entry_A_X.get() and entry_A_Y.get() and entry_B_X.get() and entry_B_Y.get():
             entry_A_X_value = float(entry_A_X.get())
@@ -122,12 +125,6 @@ def okno_wciecia_liniowego():
             return x, y
         else:
             messagebox.showerror("Błąd", "Proszę wypełnić wszystkie pola.")
-
-    #wigdet z podgladem na cala Polske
-    # map = tkintermapview.TkinterMapView(frame_linear, width=300, height=300)
-    # map.set_position(52.0689883, 19.4799726)
-    # map.set_zoom(5)
-    # map.grid(row=4, column=2, columnspan=8, rowspan=8, padx=10)
 
     # obrazek w formie instrukcji postepowania podczas wprowadznia danych
     image = Image.open("wciecie_liniowe.png")
@@ -163,7 +160,7 @@ def okno_wciecia_liniowego():
         label.grid_forget()
 
         map = tkintermapview.TkinterMapView(frame_linear, width=300, height=300)
-        map.set_position(lat_a, lon_a)
+        map.set_position(lat_c, lon_c)
         map.set_zoom(15)
         map.grid(row=4, column=2, columnspan=10, rowspan=10, padx=10)
 

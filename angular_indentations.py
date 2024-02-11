@@ -60,11 +60,9 @@ def odleglosc_ac(entry_kat_bac, entry_kat_cba, entry_A_X, entry_A_Y, entry_B_X, 
 
 def przyrosty_x(entry_kat_bac, entry_kat_cba, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
     przyrost = odleglosc_ac(entry_kat_bac, entry_kat_cba, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y) * math.cos(azymut_A_ac(entry_kat_bac, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y))
-    print(przyrost)
     return przyrost
 def przyrosty_y(entry_kat_bac, entry_kat_cba, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y):
     przyrost = odleglosc_ac(entry_kat_bac, entry_kat_cba, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y) * math.sin(azymut_A_ac(entry_kat_bac, entry_A_X, entry_A_Y, entry_B_X, entry_B_Y))
-    print(przyrost)
     return przyrost
 
 def okno_wciecia_katowego():
@@ -82,6 +80,7 @@ def okno_wciecia_katowego():
     label_B_X = Label(frame_angular, text='WSPÓŁRZĘDNA X: ')
     label_B_Y = Label(frame_angular, text='WSPÓŁRZĘDNA Y: ')
     label_empty = Label(frame_angular, text='')
+    label_info = Label(frame_angular, text="Prawidłowe wyswietlanie położenia pkt. w układzie '92")
     label_katy = Label(frame_angular, text='KĄTY DO PUNKTU C')
     label_kat_bac = Label(frame_angular, text='KĄT BAC')
     label_kat_cba = Label(frame_angular, text='KĄT CBA')
@@ -103,6 +102,7 @@ def okno_wciecia_katowego():
     label_kat_bac.grid(row=4, column=0)
     label_kat_cba.grid(row=5, column=0, pady=5)
     label_empty.grid(row=6, column=0)
+    label_info.grid(row=3, column=2, columnspan=2)
 
     entry_A_X.grid(row=1, column=1)
     entry_A_Y.grid(row=2, column=1)
@@ -136,12 +136,6 @@ def okno_wciecia_katowego():
             return x, y
         else:
             messagebox.showerror("Błąd", "Proszę wypełnić wszystkie pola.")
-
-    #wigdet z podgladem na cala Polske
-    # map = tkintermapview.TkinterMapView(frame_linear, width=300, height=300)
-    # map.set_position(52.0689883, 19.4799726)
-    # map.set_zoom(5)
-    # map.grid(row=4, column=2, columnspan=8, rowspan=8, padx=10)
 
     # obrazek w formie instrukcji postepowania podczas wprowadznia danych
     image = Image.open("wciecie_katowe.png")
@@ -178,7 +172,7 @@ def okno_wciecia_katowego():
         label.grid_forget()
 
         map = tkintermapview.TkinterMapView(frame_angular, width=300, height=300)
-        map.set_position(lat_a, lon_a)
+        map.set_position(lat_c, lon_c)
         map.set_zoom(15)
         map.grid(row=4, column=2, columnspan=10, rowspan=10, padx=10)
 
